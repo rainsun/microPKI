@@ -1,0 +1,5 @@
+address: 0.0.0.0
+listen: 9090
+dev_ca_path: dev_ca/
+prod_ca_path: /opt/dev/prod_ca/
+team_mail_list: zhouhuan@we.com;zhongzhuhua@we.com;chengliwei@we.com;lvconggang@we.com

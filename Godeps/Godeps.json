@@ -1,0 +1,19 @@
+{
+	"ImportPath": "signCert",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/spacemonkeygo/openssl",
+			"Rev": "1ea168d09854859640843a168ed781ef94ea6e2e"
+		},
+		{
+			"ImportPath": "github.com/spacemonkeygo/openssl/utils",
+			"Rev": "1ea168d09854859640843a168ed781ef94ea6e2e"
+		},
+		{
+			"ImportPath": "github.com/spacemonkeygo/spacelog",
+			"Rev": "a5645ffb35f931241bd248875fc3437843df83f0"
+		}
+	]
+}
