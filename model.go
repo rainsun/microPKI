@@ -82,21 +82,21 @@ func GetCertDetail(certFileName string, env string) string {
 func getDNfromPkiName(name pkix.Name) string {
 	subject := ""
 	for _, c := range name.Country {
-		subject += "C = " + c + ", "
+		subject += "C=" + c + ", "
 	}
 	for _, st := range name.StreetAddress {
-		subject += "ST = " + st + ", "
+		subject += "ST=" + st + ", "
 	}
 	for _, l := range name.Locality {
-		subject += "L = " + l + ", "
+		subject += "L=" + l + ", "
 	}
 	for _, o := range name.Organization {
-		subject += "O = " + o + ", "
+		subject += "O=" + o + ", "
 	}
 	for _, ou := range name.OrganizationalUnit {
-		subject += "OU = " + ou + ", "
+		subject += "OU=" + ou + ", "
 	}
-	subject += "CN = " + name.CommonName
+	subject += "CN=" + name.CommonName
 	return subject
 }
 
