@@ -119,9 +119,20 @@ func GeneratePrivateKey(cn string, env string) interface{} {
 	return priv
 }
 
-func GenerateCertRequest(cn string, email string) bool {
-	cmd := exec.Command("openssl", "req", "-new", "-key", CONFIG.DevCAPath+"users/"+cn+".key", "-out", CONFIG.DevCAPath+"users/"+cn+".csr",
-	"-subj", `/C=CN/ST=Beijing/O=Renrendai/OU=InfTeam/L=Haidian/CN=`+cn+`/emailAddress=`+email)
+func GenerateCertRequest(cn string, email string, env string) bool {
+	var path string = ""
+	var subj string = ""
+
+	if env == "PROD" {
+		path = CONFIG.ProdCAPath
+		subj = "/C=CN/ST=Beijing/O=Renrendai/OU=Infrastructure Team/L=Haidian/CN="
+	} else {
+		path = CONFIG.DevCAPath
+		subj = "/C=CN/ST=Beijing/O=Renrendai/OU=InfTeam/L=Haidian/CN="
+	}
+
+	cmd := exec.Command("openssl", "req", "-new", "-key", path+"/users/"+cn+".key", "-out", path+"/users/"+cn+".csr",
+	"-subj", subj+cn+`/emailAddress=`+email)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
@@ -144,7 +155,7 @@ func SignCert(cn string, email string, days string, env string) bool {
 	}
 
 	GeneratePrivateKey(cn, env)
-	ret := GenerateCertRequest(cn, email)
+	ret := GenerateCertRequest(cn, email, env)
 	if !ret {
 		return false
 	}
