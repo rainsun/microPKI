@@ -16,11 +16,14 @@ import (
 )
 
 const (
-	caCertFilePath = "/private/ca.crt"
-	caKeyFilePath = "/private/ca.key"
+	caCertFilePath   = "/private/ca.crt"
+	caKeyFilePath    = "/private/ca.key"
 	userCertFilePath = "/users/"
-	devOU = "Infteam"
-	prodOU = "Infrastructure Team"
+	devOU            = "Infteam"
+	prodOU           = "Infrastructure Team"
+
+	ProdENV = "PROD"
+	DevEnv  = "DEV"
 )
 
 var CONFIG config.ConfigStruct
@@ -38,9 +41,9 @@ type Certs struct {
 func GetCertsList(env string) Certs {
 	cs := Certs{[]Cert{}}
 
-	var path string =""
+	var path string = ""
 
-	if env == "PROD" {
+	if env == ProdENV {
 		path = CONFIG.ProdCAPath
 	} else {
 		path = CONFIG.DevCAPath
@@ -56,7 +59,7 @@ func GetCertsList(env string) Certs {
 				log.Println("Parse cert fail: ", filePathName)
 				continue
 			}
-			if pemBlock.Type != "CERTIFICATE" || len(pemBlock.Headers) != 0 {
+			if pemBlock.Type != microPKI.CertificatePEMType || len(pemBlock.Headers) != 0 {
 				log.Println("Parse cert fail: ", filePathName)
 				continue
 			}
@@ -77,12 +80,11 @@ func GetCertsList(env string) Certs {
 	return cs
 }
 
-
 // TODO
 func GetCertDetail(certFileName string, env string) string {
-	var path string =""
+	var path string = ""
 
-	if env == "PROD" {
+	if env == ProdENV {
 		path = CONFIG.ProdCAPath
 	} else {
 		path = CONFIG.DevCAPath
@@ -116,9 +118,9 @@ func getDNfromPkiName(name pkix.Name) string {
 }
 
 func SignCert(cn string, email string, days string, env string) bool {
-	var path string =""
+	var path string = ""
 	ou := ""
-	if env == "PROD" {
+	if env == ProdENV {
 		path = CONFIG.ProdCAPath
 		ou = prodOU
 	} else {
@@ -149,7 +151,7 @@ func SignCert(cn string, email string, days string, env string) bool {
 	pki.DumpRSAKeytoFile(privateKey, workPath+cn+".key")
 	pki.DumpCertificatetoPEMFile(cert, workPath+cn+".crt")
 
-	cmd := exec.Command("zip", cn+".zip", cn+".crt", cn+".key" )
+	cmd := exec.Command("zip", cn+".zip", cn+".crt", cn+".key")
 	cmd.Dir = workPath
 	err = cmd.Run()
 	if err != nil {

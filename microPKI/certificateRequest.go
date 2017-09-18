@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	CERTIFICATE_REQUEST_TYPE = "CERTIFICATE REQUEST"
+	CertificateRequestType = "CERTIFICATE REQUEST"
 )
 
 var (
@@ -76,6 +76,6 @@ func (pki *MicroPkI) DumpCSRFile(csr *x509.CertificateRequest, outputFilePath st
 	if err != nil {
 		return  err
 	}
-	pem.Encode(csrFile, &pem.Block{Type: CERTIFICATE_REQUEST_TYPE, Bytes: csr.Raw})
+	pem.Encode(csrFile, &pem.Block{Type: CertificateRequestType, Bytes: csr.Raw})
 	return nil
 }

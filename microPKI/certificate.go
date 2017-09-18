@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	certificatePEMType = "CERTIFICATE"
+	CertificatePEMType  = "CERTIFICATE"
 	certificateFileFlag = os.O_WRONLY|os.O_CREATE|os.O_TRUNC
 	certificateFilePerm = 0600
 )
@@ -44,7 +44,7 @@ func (pki *MicroPkI) LoadCertificatefromPEMFile(certificateFile string) (*x509.C
 		err = errors.New("Can NOT find PEM formatted block")
 		return nil, err
 	}
-	if pemBlock.Type != certificatePEMType || len(pemBlock.Headers) != 0 {
+	if pemBlock.Type != CertificatePEMType || len(pemBlock.Headers) != 0 {
 		err = errors.New("Unmatched type or headers")
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (pki *MicroPkI) DumpCertificatetoPEMFile(certificate *x509.Certificate, out
 		return err
 	}
 	pemBlock := &pem.Block{
-		Type:    certificatePEMType,
+		Type:    CertificatePEMType,
 		Headers: nil,
 		Bytes:   certificate.Raw,
 	}

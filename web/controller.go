@@ -69,7 +69,7 @@ func switchENVController(w http.ResponseWriter, r *http.Request)  {
 	session := globalSessions.SessionStart(w, r)
 	r.ParseForm()
 	if r.Form.Get(sessionKeyENV) != ""{
-		if (r.Form.Get(sessionKeyENV)) == "DEV" || r.Form.Get(sessionKeyENV) == "PROD" {
+		if (r.Form.Get(sessionKeyENV)) == utils.DevEnv || r.Form.Get(sessionKeyENV) == utils.ProdENV {
 			session.Set(sessionKeyENV, r.Form.Get(sessionKeyENV))
 			fmt.Fprintf(w, "OK")
 		} else {
@@ -89,7 +89,7 @@ func getENVController(w http.ResponseWriter, r *http.Request)  {
 func sessionHandler(w http.ResponseWriter, r *http.Request) session.Session  {
 	session := globalSessions.SessionStart(w, r)
 	if session.Get(sessionKeyENV) == nil {
-		session.Set(sessionKeyENV, "DEV")
+		session.Set(sessionKeyENV, utils.DevEnv)
 	}
 	return session
 }

@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	RSA_BITS = 2048
-	RSA_PRIVATE_TYPE = "RSA PRIVATE KEY"
+	RSA_BITS            = 2048
+	RsaPrivateType     = "RSA PRIVATE KEY"
 )
 
 func (pki *MicroPkI) GenerateRSAKey() (*rsa.PrivateKey, error) {
@@ -36,7 +36,7 @@ func (pki *MicroPkI) DumpRSAKeytoFile(privateKey *rsa.PrivateKey, outputFilePath
 	if err != nil {
 		return  err
 	}
-	pem.Encode(privKeyFile, &pem.Block{Type: RSA_PRIVATE_TYPE, Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
+	pem.Encode(privKeyFile, &pem.Block{Type: RsaPrivateType, Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (pki *MicroPkI) LoadRSAKeyfromFile(rsaKeyFile string) (*rsa.PrivateKey, err
 	if pemBlock == nil {
 		return nil, errors.New("Cannot find the RSA key")
 	}
-	if pemBlock.Type != RSA_PRIVATE_TYPE || len(pemBlock.Headers) != 0 {
+	if pemBlock.Type != RsaPrivateType || len(pemBlock.Headers) != 0 {
 		return nil, errors.New("Unmatched RSA type or Header")
 	}
 
