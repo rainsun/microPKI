@@ -15,6 +15,7 @@ var CONFIG = config.ConfigStruct{}
 func main() {
 	err := LoadConfig(&CONFIG)
 	utils.CONFIG = CONFIG
+	web.CONFIG = CONFIG.WebConfig
 	if err != nil {
 		log.Panic(err)
 		os.Exit(1)
@@ -25,7 +26,7 @@ func main() {
 	//c.AddFunc("24 5 14 * * *", validateCertTask)
 	//c.Start()
 
-	web.MainLoop(CONFIG.Address, CONFIG.Listen, CONFIG.EnableHttps, CONFIG.ServerCertPath, CONFIG.ServerKeyPath, CONFIG.ProdCAPath+"/private/ca.crt", CONFIG.EnableClientCertAuth, CONFIG.EnableClientCertCNAuth, CONFIG.AuthCN)
+	web.MainLoop()
 	os.Exit(0)
 }
 

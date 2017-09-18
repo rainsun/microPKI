@@ -1,12 +1,13 @@
-address: 0.0.0.0
-listen: 9090
 dev_ca_path: dev_ca/
 prod_ca_path: /opt/dev/prod_ca/
 team_mail_list: zhouhuan@we.com;zhongzhuhua@we.com;chengliwei@we.com;lvconggang@we.com
-enable_https: true
-server_cert_path: dev_ca/server/server.crt
-server_key_path: dev_ca/server/server.key
-enable_client_cert_auth: true
-client_auth_ca_file_path: /opt/dev/prod_ca/private/ca.crt
-enable_client_cert_CN_auth: true
-auth_cn: Infrastructure Team Debug
+web:
+  address: 0.0.0.0
+  listen: 9090
+  enable_https: true
+  server_cert_path: dev_ca/server/server.crt
+  server_key_path: dev_ca/server/server.key
+  enable_client_cert_auth: true
+  client_auth_ca_file_path: /opt/dev/prod_ca/private/ca.crt
+  enable_client_cert_CN_auth: true
+  auth_cn: Infrastructure Team Debug
