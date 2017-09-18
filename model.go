@@ -44,23 +44,24 @@ func GetCertsList(env string) Certs {
 		path = CONFIG.DevCAPath
 	}
 
-	files, _ := ioutil.ReadDir(path + "/users/")
+	files, _ := ioutil.ReadDir(path + userCertFilePath)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), "crt") || strings.HasSuffix(f.Name(), "pem") {
-			certFile, _ := ioutil.ReadFile(path + "/users/" + f.Name())
+			filePathName := path + userCertFilePath + f.Name()
+			certFile, _ := ioutil.ReadFile(filePathName)
 			pemBlock, _ := pem.Decode(certFile)
 			if pemBlock == nil {
-				log.Println("Parse cert fail: ", path+"/users/"+f.Name())
+				log.Println("Parse cert fail: ", filePathName)
 				continue
 			}
 			if pemBlock.Type != "CERTIFICATE" || len(pemBlock.Headers) != 0 {
-				log.Println("Parse cert fail: ", path+"/users/"+f.Name())
+				log.Println("Parse cert fail: ", filePathName)
 				continue
 			}
 
 			cert, err := x509.ParseCertificate(pemBlock.Bytes)
 			if err != nil {
-				log.Fatal(f.Name(), err)
+				log.Fatal(filePathName, err)
 				continue
 			}
 

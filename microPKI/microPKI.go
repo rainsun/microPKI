@@ -22,6 +22,7 @@ const (
 	KeySerialNumber = "SERIAL_NUMBER"
 	keyCertPrefix = "CERT-"
 	pkiDateBaseName = "PKI_DATABASE"
+	initSerialNumber = 1000
 )
 
 func NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(caCert string, caKey string, dbPath string) *MicroPkI {
@@ -70,7 +71,7 @@ func (caSvc *MicroPkI) buildCAService(caCert string, caKey string) error {
 	caSvc.db.Put([]byte(keyCaCertFile), []byte(caCert), nil)
 	caSvc.db.Put([]byte(keyCaKeyFile), []byte(caKey), nil)
 	// TODO
-	caSvc.db.Put([]byte(KeySerialNumber), big.NewInt(1000).Bytes(), nil)
+	caSvc.db.Put([]byte(KeySerialNumber), big.NewInt(initSerialNumber).Bytes(), nil)
 	return nil
 }
 

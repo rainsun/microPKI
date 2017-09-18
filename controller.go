@@ -8,36 +8,40 @@ import (
 	"signCert/session"
 )
 
+const (
+	sessionKeyENV = "ENV"
+)
 
 func indexController(w http.ResponseWriter, r *http.Request){
 	session := sessionHandler(w, r)
-	r.ParseForm()  //解析参数，默认是不会解析的
-	log.Println("Get request from ", r.URL.Path, ", paramaters are ", r.Form)
-	for k, v := range r.Form {
-		fmt.Println("key:", k)
-		fmt.Println("val:", strings.Join(v, ""))
-	}
-	indexView(w, session.Get("ENV").(string))
+	handleRequest(r)
+
+	env := session.Get(sessionKeyENV).(string)
+	cs := GetCertsList(env)
+
+	indexView(w, cs)
 }
 
 func certController(w http.ResponseWriter, r *http.Request){
 	session := sessionHandler(w, r)
-	sess := globalSessions.SessionStart(w, r)
-	log.Print(sess.Get("ENV"))
-	r.ParseForm()
-	log.Println("Get request from ", r.URL.Path, ", paramaters are ", r.Form)
+	handleRequest(r)
 	if len(r.Form) == 0 || r.Form.Get("cert") == "" {
 		fmt.Fprintf(w, "error")
 		return
 	}
 	certFile := r.Form.Get("cert")
-	certDetailView(w, certFile, session.Get("ENV").(string))
+	env := session.Get(sessionKeyENV).(string)
+	cert := GetCertDetail(certFile, env)
+	certDetailView(w, cert)
 }
 
 func signCertController(w http.ResponseWriter, r *http.Request)  {
 	session := sessionHandler(w, r)
-	r.ParseForm()  //解析参数，默认是不会解析的
-	log.Println("Get request from ", r.URL.Path, ", paramaters are ", r.Form)
+	r.ParseForm()
+	handleRequest(r)
+	env := session.Get(sessionKeyENV).(string)
+
+
 	if len(r.Form) == 0 || r.Form.Get("cn") == "" || r.Form.Get("email") == "" {
 		fmt.Fprintf(w, "error")
 		return
@@ -52,7 +56,7 @@ func signCertController(w http.ResponseWriter, r *http.Request)  {
 		fmt.Fprintf(w, "please use corperation email address!")
 		return
 	}
-	ret := SignCert(cn, email, days, session.Get("ENV").(string))
+	ret := SignCert(cn, email, days, env)
 	if ret {
 		fmt.Fprintf(w, "Cert signed!")
 	} else {
@@ -63,9 +67,9 @@ func signCertController(w http.ResponseWriter, r *http.Request)  {
 func switchENVController(w http.ResponseWriter, r *http.Request)  {
 	session := globalSessions.SessionStart(w, r)
 	r.ParseForm()
-	if r.Form.Get("ENV") != ""{
-		if (r.Form.Get("ENV")) == "DEV" || r.Form.Get("ENV") == "PROD" {
-			session.Set("ENV", r.Form.Get("ENV"))
+	if r.Form.Get(sessionKeyENV) != ""{
+		if (r.Form.Get(sessionKeyENV)) == "DEV" || r.Form.Get(sessionKeyENV) == "PROD" {
+			session.Set(sessionKeyENV, r.Form.Get(sessionKeyENV))
 			fmt.Fprintf(w, "OK")
 		} else {
 			fmt.Fprintf(w, "WRONG")
@@ -78,13 +82,22 @@ func switchENVController(w http.ResponseWriter, r *http.Request)  {
 
 func getENVController(w http.ResponseWriter, r *http.Request)  {
 	session := globalSessions.SessionStart(w, r)
-	fmt.Fprintf(w, session.Get("ENV").(string))
+	fmt.Fprintf(w, session.Get(sessionKeyENV).(string))
 }
 
 func sessionHandler(w http.ResponseWriter, r *http.Request) session.Session  {
 	session := globalSessions.SessionStart(w, r)
-	if session.Get("ENV") == nil {
-		session.Set("ENV", "DEV")
+	if session.Get(sessionKeyENV) == nil {
+		session.Set(sessionKeyENV, "DEV")
 	}
 	return session
+}
+
+func handleRequest(r *http.Request){
+	r.ParseForm()
+	log.Println("Get request from ", r.URL.Path, ", paramaters are ", r.Form)
+	for k, v := range r.Form {
+		fmt.Println("key:", k)
+		fmt.Println("val:", strings.Join(v, ""))
+	}
 }

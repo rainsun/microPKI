@@ -6,14 +6,12 @@ import (
 )
 
 
-func indexView(w http.ResponseWriter, env string) {
+func indexView(w http.ResponseWriter, cs Certs) {
 	t := template.Must(template.ParseFiles("template/index.html"))
-	cs := GetCertsList(env)
 	t.Execute(w, cs)
 }
 
-func certDetailView(w http.ResponseWriter, certFileName string, env string) {
+func certDetailView(w http.ResponseWriter, cert string) {
 	t := template.Must(template.ParseFiles("template/cert_detail.html"))
-	cert := GetCertDetail(certFileName, env)
 	t.Execute(w, cert)
 }
