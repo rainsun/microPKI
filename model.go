@@ -64,6 +64,8 @@ func GetCertsList(env string) Certs {
 	return cs
 }
 
+
+// TODO
 func GetCertDetail(certFileName string, env string) string {
 	var path string =""
 

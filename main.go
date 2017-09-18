@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"github.com/robfig/cron"
 )
 
 type ConfigStruct struct {
@@ -29,6 +30,13 @@ func main() {
 		log.Panic(err)
 		os.Exit(1)
 	}
+
+
+	c := cron.New()
+	//			秒 分 时 日 月 星期
+	c.AddFunc("24 5 14 * * *", validateCertTask)
+	c.Start()
+
 	MainLoop()
 	os.Exit(0)
 }
