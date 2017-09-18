@@ -31,7 +31,7 @@ var (
 )
 
 
-func (pki *MicroPkI) CreateCertificateSigningRequest(key *rsa.PrivateKey, organizationalUnit string, ipList []net.IP, domainList []string, organization string, country string, province string, locality string, commonName string, email string) (*x509.CertificateRequest, error) {
+func (pki *MicroPkI) GenerateCertificateSigningRequest(key *rsa.PrivateKey, organizationalUnit string, ipList []net.IP, domainList []string, organization string, country string, province string, locality string, commonName string, email string) (*x509.CertificateRequest, error) {
 	csrPkixName.CommonName = commonName
 
 	if len(organizationalUnit) > 0 {

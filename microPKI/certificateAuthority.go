@@ -56,8 +56,8 @@ var (
 
 // CreateCertificateAuthority creates Certificate Authority using existing key.
 // CertificateAuthorityInfo returned is the extra infomation required by Certificate Authority.
-func CreateCertificateAuthority(key *rsa.PrivateKey, organizationalUnit string, years int, organization string, country string, province string, locality string, commonName string) (*x509.Certificate, error) {
-	subjectKeyID, err := GenerateSubjectKeyID(key.Public)
+func (pki *MicroPkI) CreateCertificateAuthority(key *rsa.PrivateKey, organizationalUnit string, years int, organization string, country string, province string, locality string, commonName string) (*x509.Certificate, error) {
+	subjectKeyID, err := pki.GenerateSubjectKeyID(key.Public)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func CreateCertificateAuthority(key *rsa.PrivateKey, organizationalUnit string, 
 		return nil, err
 	}
 
-	ca, err := LoadCertificatefromDerBytes(crtBytes)
+	ca, err := pki.LoadCertificatefromDerBytes(crtBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +118,8 @@ func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.Certificat
 
 	authTemplate.RawSubject = csr.RawSubject
 
-	caExpiry := time.Now().Add(pki.caCert.NotAfter.Sub(time.Now()))
-	proposedExpiry := time.Now().AddDate(expDays, expMonths, expDays).UTC()
+	caExpiry := pki.caCert.NotAfter
+	proposedExpiry := time.Now().AddDate(expYear, expMonths, expDays).UTC()
 	// ensure cert doesn't expire after issuer
 	if caExpiry.Before(proposedExpiry) {
 		authTemplate.NotAfter = caExpiry
@@ -127,7 +127,7 @@ func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.Certificat
 		authTemplate.NotAfter = proposedExpiry
 	}
 
-	authTemplate.SubjectKeyId, err = GenerateSubjectKeyID(csr.PublicKey)
+	authTemplate.SubjectKeyId, err = pki.GenerateSubjectKeyID(csr.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.Certificat
 		return nil, err
 	}
 
-	cert, err :=  LoadCertificatefromDerBytes(crtOutBytes)
+	cert, err :=  pki.LoadCertificatefromDerBytes(crtOutBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,11 @@ func (pki *MicroPkI) recordCertificateSigning(cert *x509.Certificate) error {
 		log.Fatal("DB faild: [recordCertificateSigning] ",  err)
 		return err
 	}
-	err = pki.db.Put([]byte(keyCertPrefix + record.commenName), []byte(json.Marshal(record)), nil)
+	jsonRecord, err := json.Marshal(record)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = pki.db.Put([]byte(keyCertPrefix + record.commenName), []byte(jsonRecord), nil)
 	if err != nil {
 		log.Fatal("DB faild: [recordCertificateSigning] ",  err)
 		return err

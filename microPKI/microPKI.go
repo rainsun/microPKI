@@ -21,10 +21,28 @@ const (
 	keyCaKeyFile = "CA_KEY_FILE"
 	KeySerialNumber = "SERIAL_NUMBER"
 	keyCertPrefix = "CERT-"
+	pkiDateBaseName = "PKI_DATABASE"
 )
 
+func NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(caCert string, caKey string, dbPath string) *MicroPkI {
+	/*
+	PRIVATE METHOD
+	DO NOT USE IN PRODUT ENV
+	 */
+	db, err := leveldb.OpenFile(dbPath+"/"+pkiDateBaseName, nil)
+	if err != nil {
+		log.Fatal("Can not open leveldb, ", err)
+	}
+	pki := MicroPkI{db: *db}
+	err = pki.ReBuildService()
+	if err != nil{
+		pki.initCAServiceFromExistCert(caCert, caKey)
+	}
+	return &pki
+}
+
 func NewMircoPKI(caCert string, caKey string) *MicroPkI {
-	db, err := leveldb.OpenFile("CERTIFICATE_DATABASE", nil)
+	db, err := leveldb.OpenFile(pkiDateBaseName, nil)
 	if err != nil {
 		log.Fatal("Can not open leveldb, ", err)
 	}
@@ -37,13 +55,13 @@ func NewMircoPKI(caCert string, caKey string) *MicroPkI {
 }
 
 func (caSvc *MicroPkI) buildCAService(caCert string, caKey string) error {
-	cert, err := LoadCertificatefromPEMFile(caCert)
+	cert, err := caSvc.LoadCertificatefromPEMFile(caCert)
 	if err != nil {
 		log.Fatal("Load CA Cert failed: ", err)
 		return err
 	}
 	caSvc.caCert = cert
-	key, err := LoadRSAKeyfromFile(caKey)
+	key, err := caSvc.LoadRSAKeyfromFile(caKey)
 	if err != nil {
 		log.Fatal("Load CA Key failed: ", err)
 		return err

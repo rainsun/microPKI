@@ -67,7 +67,7 @@ func GetCertsList(env string) Certs {
 			if len(cert.Subject.CommonName) == 0 {
 				continue
 			}
-			c := Cert{Filename: f.Name(), Subject: getDNfromPkiName(cert.Subject), Exp: cert.NotAfter.Format("2006-01-02 15:04:05"), Issuer: getDNfromPkiName(cert.Issuer)}
+			c := Cert{Filename: f.Name(), Subject: getDNfromPkiName(cert.Subject), Exp: cert.NotAfter.UTC().Format("2006-01-02 15:04:05"), Issuer: getDNfromPkiName(cert.Issuer)}
 			cs.Crt = append(cs.Crt, c)
 		}
 	}
@@ -123,13 +123,13 @@ func SignCert(cn string, email string, days string, env string) bool {
 		ou = devOU
 	}
 
-	pki := microPKI.NewMircoPKI(path+caCertFilePath, path+caKeyFilePath)
+	pki := microPKI.NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(path+caCertFilePath, path+caKeyFilePath, path)
 	privateKey, err := pki.GenerateRSAKey()
 	if err != nil {
 		log.Fatal("Generate private key failed: ", err)
 		return false
 	}
-	csr, err := pki.CreateCertificateSigningRequest(privateKey, ou, nil, nil, "Renrendai", "CN", "Beijing", "Haidian", cn, email)
+	csr, err := pki.GenerateCertificateSigningRequest(privateKey, ou, nil, nil, "Renrendai", "CN", "Beijing", "Haidian", cn, email)
 	if err != nil {
 		log.Fatal("Generate csr failed: ", err)
 		return false
