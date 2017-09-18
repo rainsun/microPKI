@@ -1,15 +1,14 @@
 package main
 
 import (
-	"os"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"os"
 	"signCert/config"
 	"signCert/utils"
 	"signCert/web"
 )
-
 
 var CONFIG = config.ConfigStruct{}
 
@@ -20,7 +19,6 @@ func main() {
 		log.Panic(err)
 		os.Exit(1)
 	}
-
 
 	//c := cron.New()
 	//			秒 分 时 日 月 星期
