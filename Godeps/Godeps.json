@@ -4,6 +4,14 @@
 	"GodepVersion": "v79",
 	"Deps": [
 		{
+			"ImportPath": "github.com/golang/snappy",
+			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
+		},
+		{
+			"ImportPath": "github.com/scorredoira/email",
+			"Rev": "ce6dfab97c7ac801aa09ab6f3275f4534f25734b"
+		},
+		{
 			"ImportPath": "github.com/spacemonkeygo/openssl",
 			"Rev": "1ea168d09854859640843a168ed781ef94ea6e2e"
 		},
@@ -14,6 +22,58 @@
 		{
 			"ImportPath": "github.com/spacemonkeygo/spacelog",
 			"Rev": "a5645ffb35f931241bd248875fc3437843df83f0"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/cache",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/comparer",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/errors",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/filter",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/iterator",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/journal",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/memdb",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/opt",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/storage",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/table",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
+			"Rev": "b89cc31ef7977104127d34c1bd31ebd1a9db2199"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "1be3d31502d6eabc0dd7ce5b0daab022e14a5538"
 		}
 	]
 }
