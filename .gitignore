@@ -1,3 +1,4 @@
 signCert
-.idea
+.idea/
 将删除 model/
+CERTIFICATE_DATABASE*

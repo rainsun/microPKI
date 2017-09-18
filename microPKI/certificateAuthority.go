@@ -7,6 +7,8 @@ import (
 	"crypto/x509/pkix"
 	"crypto/rsa"
 	"crypto/rand"
+	"log"
+	"encoding/json"
 )
 
 var (
@@ -94,21 +96,30 @@ func CreateCertificateAuthority(key *rsa.PrivateKey, organizationalUnit string, 
 
 // CreateIntermediateCertificateAuthority creates an intermediate
 // CA certificate signed by the given authority.
-func CreateIntermediateCertificateAuthority(ca *x509.Certificate, caKey *rsa.PrivateKey, csr *x509.CertificateRequest, years int) (*x509.Certificate, error) {
+func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.CertificateRequest, expYear int, expMonths int, expDays int) (*x509.Certificate, error) {
+	/*
+	// Random Serial Number
+
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
 		return nil, err
 	}
+	*/
+	raw, err := pki.db.Get([]byte(KeySerialNumber), nil)
+	if err != nil {
+		log.Fatal("DB Failed: [createIntermediateCertificateAuthority] ", err)
+	}
+	serialNumber := big.NewInt(0).SetBytes(raw)
+	serialNumber = serialNumber.Add(serialNumber, big.NewInt(1)) // SerialNumber increase once
 	authTemplate.SerialNumber.Set(serialNumber)
 	authTemplate.MaxPathLenZero = false
 
 
-
 	authTemplate.RawSubject = csr.RawSubject
 
-	caExpiry := time.Now().Add(ca.NotAfter.Sub(time.Now()))
-	proposedExpiry := time.Now().AddDate(years, 0, 0).UTC()
+	caExpiry := time.Now().Add(pki.caCert.NotAfter.Sub(time.Now()))
+	proposedExpiry := time.Now().AddDate(expDays, expMonths, expDays).UTC()
 	// ensure cert doesn't expire after issuer
 	if caExpiry.Before(proposedExpiry) {
 		authTemplate.NotAfter = caExpiry
@@ -125,7 +136,7 @@ func CreateIntermediateCertificateAuthority(ca *x509.Certificate, caKey *rsa.Pri
 	authTemplate.DNSNames = csr.DNSNames
 
 
-	crtOutBytes, err := x509.CreateCertificate(rand.Reader, &authTemplate, ca, csr.PublicKey, caKey)
+	crtOutBytes, err := x509.CreateCertificate(rand.Reader, &authTemplate, pki.caCert, csr.PublicKey, pki.caKey)
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +145,31 @@ func CreateIntermediateCertificateAuthority(ca *x509.Certificate, caKey *rsa.Pri
 	if err != nil {
 		return nil, err
 	}
+	err = pki.recordCertificateSigning(cert)
+	if err != nil {
+		log.Fatal("Record Failed: ", err)
+		return nil, err
+	}
 	return cert, nil
+}
+
+func (pki *MicroPkI) recordCertificateSigning(cert *x509.Certificate) error {
+	record := certSignRecord{
+		commenName: cert.Subject.CommonName,
+		notAfter: cert.NotAfter,
+		notBefore: cert.NotBefore,
+		serialNumber: *cert.SerialNumber,
+	}
+	err := pki.db.Put([]byte(KeySerialNumber), record.serialNumber.Bytes(), nil)
+	if err != nil {
+		log.Fatal("DB faild: [recordCertificateSigning] ",  err)
+		return err
+	}
+	err = pki.db.Put([]byte(keyCertPrefix + record.commenName), []byte(json.Marshal(record)), nil)
+	if err != nil {
+		log.Fatal("DB faild: [recordCertificateSigning] ",  err)
+		return err
+	}
+	return nil
 }
 

@@ -14,7 +14,7 @@ const (
 	certificateFilePerm = 0600
 )
 
-func LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certificate, error) {
+func (pki *MicroPkI) LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certificate, error) {
 	crts, err := x509.ParseCertificates(derBytes)
 	if err != nil {
 		return nil, err
@@ -26,15 +26,15 @@ func LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certificate, error) {
 	return crts[0], nil
 }
 
-func LoadCertificatefromDerFile(certificateFile string) (*x509.Certificate, error) {
+func (pki *MicroPkI) LoadCertificatefromDerFile(certificateFile string) (*x509.Certificate, error) {
 	certificateBits, err := ioutil.ReadFile(certificateFile)
 	if err != nil {
 		return nil, err
 	}
-	return LoadCertificatefromDerBytes(certificateBits)
+	return pki.LoadCertificatefromDerBytes(certificateBits)
 }
 
-func LoadCertificatefromPEMFile(certificateFile string) (*x509.Certificate, error) {
+func (pki *MicroPkI) LoadCertificatefromPEMFile(certificateFile string) (*x509.Certificate, error) {
 	certificateBits, err := ioutil.ReadFile(certificateFile)
 	if err != nil {
 		return nil, err
@@ -48,10 +48,10 @@ func LoadCertificatefromPEMFile(certificateFile string) (*x509.Certificate, erro
 		err = errors.New("Unmatched type or headers")
 		return nil, err
 	}
-	return LoadCertificatefromDerBytes(pemBlock.Bytes)
+	return pki.LoadCertificatefromDerBytes(pemBlock.Bytes)
 }
 
-func DumpCertificatetoPEMFile(certificate *x509.Certificate, outputFilePath string) error {
+func (pki *MicroPkI) DumpCertificatetoPEMFile(certificate *x509.Certificate, outputFilePath string) error {
 	certificateFile, err := os.OpenFile(outputFilePath, certificateFileFlag, certificateFilePerm)
 	defer certificateFile.Close()
 	if err != nil {
@@ -68,7 +68,7 @@ func DumpCertificatetoPEMFile(certificate *x509.Certificate, outputFilePath stri
 	return nil
 }
 
-func DumpCertificatetoDERFile(certificate *x509.Certificate, outputFilePath string) error {
+func (pki *MicroPkI) DumpCertificatetoDERFile(certificate *x509.Certificate, outputFilePath string) error {
 	certificateFile, err := os.OpenFile(outputFilePath, certificateFileFlag, certificateFilePerm)
 	defer certificateFile.Close()
 	if err != nil {

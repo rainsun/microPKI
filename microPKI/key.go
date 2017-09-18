@@ -19,7 +19,7 @@ const (
 	RSA_PRIVATE_TYPE = "RSA PRIVATE KEY"
 )
 
-func GenerateRSAKey() (*rsa.PrivateKey, error) {
+func (pki *MicroPkI) GenerateRSAKey() (*rsa.PrivateKey, error) {
 	priv, err := rsa.GenerateKey(rand.Reader, RSA_BITS)
 	if err != nil {
 		log.Fatalf("Failed to generate private key: %s", err)
@@ -30,7 +30,7 @@ func GenerateRSAKey() (*rsa.PrivateKey, error) {
 }
 
 
-func DumpRSAKeytoFile(privateKey *rsa.PrivateKey, outputFilePath string) error {
+func (pki *MicroPkI) DumpRSAKeytoFile(privateKey *rsa.PrivateKey, outputFilePath string) error {
 	privKeyFile, err := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	defer privKeyFile.Close()
 	if err != nil {
@@ -40,12 +40,12 @@ func DumpRSAKeytoFile(privateKey *rsa.PrivateKey, outputFilePath string) error {
 	return nil
 }
 
-func DumpEncryptRSAKeytoFile(privateKey *rsa.PrivateKey, passphrase string, outputFilePath string) error {
+func (pki *MicroPkI) DumpEncryptRSAKeytoFile(privateKey *rsa.PrivateKey, passphrase string, outputFilePath string) error {
 	// TODO
 	return nil
 }
 
-func LoadRSAKeyfromFile(rsaKeyFile string) (*rsa.PrivateKey, error) {
+func (pki *MicroPkI) LoadRSAKeyfromFile(rsaKeyFile string) (*rsa.PrivateKey, error) {
 	rsaKeyBits, err := ioutil.ReadFile(rsaKeyFile)
 	if err != nil {
 		return nil, err
@@ -67,14 +67,14 @@ func LoadRSAKeyfromFile(rsaKeyFile string) (*rsa.PrivateKey, error) {
 	return priv, nil
 }
 
-func LoadEncryptRSAKeyfromFile(encryptRSAKeyFile string, passphrase string) (*rsa.PrivateKey, error) {
+func (pki *MicroPkI) LoadEncryptRSAKeyfromFile(encryptRSAKeyFile string, passphrase string) (*rsa.PrivateKey, error) {
 	// TODO
 	return nil, nil
 }
 
 // GenerateSubjectKeyID generates SubjectKeyId used in Certificate
 // Id is 160-bit SHA-1 hash of the value of the BIT STRING subjectPublicKey
-func GenerateSubjectKeyID(pub crypto.PublicKey) ([]byte, error) {
+func (pki *MicroPkI) GenerateSubjectKeyID(pub crypto.PublicKey) ([]byte, error) {
 	var pubBytes []byte
 	var err error
 	switch pub := pub.(type) {

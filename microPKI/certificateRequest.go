@@ -31,8 +31,7 @@ var (
 )
 
 
-func CreateCertificateSigningRequest(key *rsa.PrivateKey, organizationalUnit string, ipList []net.IP, domainList []string, organization string, country string, province string, locality string, commonName string, email string) ([]byte, error) {
-//C = CN, ST = Beijing, L = Haidian, O = Renrendai, OU = InfTeam, CN = LyuConggang, emailAddress = ]lvconggang@we.com
+func (pki *MicroPkI) CreateCertificateSigningRequest(key *rsa.PrivateKey, organizationalUnit string, ipList []net.IP, domainList []string, organization string, country string, province string, locality string, commonName string, email string) (*x509.CertificateRequest, error) {
 	csrPkixName.CommonName = commonName
 
 	if len(organizationalUnit) > 0 {
@@ -63,16 +62,20 @@ func CreateCertificateSigningRequest(key *rsa.PrivateKey, organizationalUnit str
 	if err != nil {
 		return nil, err
 	}
-	return csrBytes, nil
+	csr, err := x509.ParseCertificateRequest(csrBytes)
+	if err != nil {
+		return nil, err
+	}
+	return csr, nil
 }
 
-func DumpCSRFile(csrBytes []byte, outputFilePath string) error {
+func (pki *MicroPkI) DumpCSRFile(csr *x509.CertificateRequest, outputFilePath string) error {
 	// Default as PEM type
 	csrFile, err := os.OpenFile(outputFilePath, certificateFileFlag, certificateFilePerm)
 	defer csrFile.Close()
 	if err != nil {
 		return  err
 	}
-	pem.Encode(csrFile, &pem.Block{Type: CERTIFICATE_REQUEST_TYPE, Bytes: csrBytes})
+	pem.Encode(csrFile, &pem.Block{Type: CERTIFICATE_REQUEST_TYPE, Bytes: csr.Raw})
 	return nil
 }

@@ -1,20 +1,29 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"io/ioutil"
 	"log"
-	"os"
 	"os/exec"
 	"strings"
-	"bytes"
 	"fmt"
 	"signCert/mail"
+	"signCert/microPKI"
+	"strconv"
 )
+
+const (
+	caCertFilePath = "/private/ca.crt"
+	caKeyFilePath = "/private/ca.key"
+	userCertFilePath = "/users/"
+	devOU = "Infteam"
+	prodOU = "Infrastructure Team"
+)
+
+var successNotifyMailTile string = "[INFR PKI] [%s] Cert signed for %s"
+var successNotifyMailBody string = "%s's cert has been signed!\n Please download attachment as archive of the cert!"
 
 type Cert struct {
 	Filename, Subject, Exp, Issuer string
@@ -41,9 +50,11 @@ func GetCertsList(env string) Certs {
 			certFile, _ := ioutil.ReadFile(path + "/users/" + f.Name())
 			pemBlock, _ := pem.Decode(certFile)
 			if pemBlock == nil {
+				log.Println("Parse cert fail: ", path+"/users/"+f.Name())
 				continue
 			}
 			if pemBlock.Type != "CERTIFICATE" || len(pemBlock.Headers) != 0 {
+				log.Println("Parse cert fail: ", path+"/users/"+f.Name())
 				continue
 			}
 
@@ -52,8 +63,7 @@ func GetCertsList(env string) Certs {
 				log.Fatal(f.Name(), err)
 				continue
 			}
-			// C = CN, ST = Beijing, L = Haidian, O = Renrendai, OU = InfTeam
-			// C = CN, ST = Beijing, O = Renrendai, OU = InfTeam, L = Haidian, CN = HuangDaowei, emailAddress = huangdaowei@we.com
+
 			if len(cert.Subject.CommonName) == 0 {
 				continue
 			}
@@ -102,103 +112,54 @@ func getDNfromPkiName(name pkix.Name) string {
 	return subject
 }
 
-func GeneratePrivateKey(cn string, env string) interface{} {
-	var path string =""
-
-	if env == "PROD" {
-		path = CONFIG.ProdCAPath
-	} else {
-		path = CONFIG.DevCAPath
-	}
-
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		log.Fatalf("Failed to generate private key: %s", err)
-	}
-	privKeyFile, err := os.OpenFile(path+"/users/"+cn+".key", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	pem.Encode(privKeyFile, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-	privKeyFile.Close()
-	return priv
-}
-
-func GenerateCertRequest(cn string, email string, env string) bool {
-	var path string = ""
-	var subj string = ""
-
-	if env == "PROD" {
-		path = CONFIG.ProdCAPath
-		subj = "/C=CN/ST=Beijing/O=Renrendai/OU=Infrastructure Team/L=Haidian/CN="
-	} else {
-		path = CONFIG.DevCAPath
-		subj = "/C=CN/ST=Beijing/O=Renrendai/OU=InfTeam/L=Haidian/CN="
-	}
-
-	cmd := exec.Command("openssl", "req", "-new", "-key", path+"/users/"+cn+".key", "-out", path+"/users/"+cn+".csr",
-	"-subj", subj+cn+`/emailAddress=`+email)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		log.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return false
-	}
-	return true
-}
-
 func SignCert(cn string, email string, days string, env string) bool {
 	var path string =""
-
+	ou := ""
 	if env == "PROD" {
 		path = CONFIG.ProdCAPath
+		ou = prodOU
 	} else {
 		path = CONFIG.DevCAPath
+		ou = devOU
 	}
 
-	GeneratePrivateKey(cn, env)
-	ret := GenerateCertRequest(cn, email, env)
-	if !ret {
-		return false
-	}
-	//openssl ca -in server/server.csr -cert private/ca.crt -keyfile private/ca.key -out server/server.crt -config "./conf/openssl.conf"
-	var cmd *exec.Cmd
-	if days != "" {
-		cmd = exec.Command("openssl", "ca", "-in", "users/"+cn+".csr",
-			"-cert", "private/ca.crt", "-out", "users/"+cn+".crt",
-			"-config", "conf/openssl.conf", "-batch",
-			"-days", days,
-		)
-	} else {
-		cmd = exec.Command("openssl", "ca", "-in", "users/"+cn+".csr",
-			"-cert", "private/ca.crt", "-out", "users/"+cn+".crt",
-			"-config", "conf/openssl.conf", "-batch")
-	}
-	cmd.Dir = path
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err := cmd.Run()
+	pki := microPKI.NewMircoPKI(path+caCertFilePath, path+caKeyFilePath)
+	privateKey, err := pki.GenerateRSAKey()
 	if err != nil {
-		log.Println(fmt.Sprint(err) + ": " + stderr.String())
+		log.Fatal("Generate private key failed: ", err)
+		return false
+	}
+	csr, err := pki.CreateCertificateSigningRequest(privateKey, ou, nil, nil, "Renrendai", "CN", "Beijing", "Haidian", cn, email)
+	if err != nil {
+		log.Fatal("Generate csr failed: ", err)
+		return false
+	}
+	expDays, err := strconv.Atoi(days)
+	cert, err := pki.SignCert(csr, 0, 0, expDays)
+	if err != nil {
+		log.Fatal("Sign cert failed: ", err)
 		return false
 	}
 
-	cmd = exec.Command("zip", cn+".zip", cn+".crt", cn+".key" )
-	cmd.Dir = path + "/users"
+	workPath := path + userCertFilePath
+
+	pki.DumpRSAKeytoFile(privateKey, workPath+cn+".key")
+	pki.DumpCertificatetoPEMFile(cert, workPath+cn+".crt")
+
+	cmd := exec.Command("zip", cn+".zip", cn+".crt", cn+".key" )
+	cmd.Dir = workPath
 	err = cmd.Run()
 	if err != nil {
 		log.Println(fmt.Sprint(err))
 	}
-	err = mail.SendMail(email, "[INFR PKI] ["+env+"] Cert signed for " + cn, cn+"'s cert has been signed!\n Please download attachment as archive of the cert!", path+"/users/"+cn+".zip")
+	err = mail.SendMail(email, fmt.Sprintf(successNotifyMailTile, env, cn), fmt.Sprintf(successNotifyMailBody, cn), workPath+cn+".zip")
 	if err != nil {
 		log.Println(fmt.Sprint(err))
 		return false
 	}
 	mailList := strings.Split(CONFIG.TeamMail, ";")
 	for _, mailAddr := range mailList {
-		err = mail.SendMail(mailAddr, "[INFR PKI] ["+env+"] Cert signed for " + cn, "ARCHIVED!", "")
+		err = mail.SendMail(mailAddr, fmt.Sprintf(successNotifyMailTile, env, cn), "ARCHIVED!", "")
 		if err != nil {
 			log.Println(err)
 		}

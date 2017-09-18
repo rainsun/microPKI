@@ -24,7 +24,7 @@ func certController(w http.ResponseWriter, r *http.Request){
 	session := sessionHandler(w, r)
 	sess := globalSessions.SessionStart(w, r)
 	log.Print(sess.Get("ENV"))
-	r.ParseForm()  //解析参数，默认是不会解析的
+	r.ParseForm()
 	log.Println("Get request from ", r.URL.Path, ", paramaters are ", r.Form)
 	if len(r.Form) == 0 || r.Form.Get("cert") == "" {
 		fmt.Fprintf(w, "error")
