@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"crypto/tls"
@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"signCert/session"
+	"signCert/web/session"
 )
 
 func routeEngine() {
@@ -20,17 +20,17 @@ func routeEngine() {
 
 var globalSessions *session.Manager
 
-func MainLoop() {
+func MainLoop(bindAddr string, port string, enableTLS bool, certPath string, certKey string, caCertPath string, enableClientCertAuth bool, enableClientCNAuth bool, authCN string) {
 	routeEngine()
 
 	globalSessions, _ = session.NewManager("memory", "InfrCACookieId", 3600)
 	go globalSessions.GC()
 
-	server := &http.Server{Addr: CONFIG.Address + ":" + CONFIG.Listen}
+	server := &http.Server{Addr: bindAddr + ":" + port}
 	var err error
-	if CONFIG.EnableHttps {
-		server.TLSConfig = generateTLSConfig()
-		err = server.ListenAndServeTLS(CONFIG.ServerCertPath, CONFIG.ServerKeyPath)
+	if enableTLS {
+		server.TLSConfig = generateTLSConfig(enableClientCertAuth, caCertPath, enableClientCNAuth, authCN)
+		err = server.ListenAndServeTLS(certPath, certKey)
 	} else {
 		err = server.ListenAndServe()
 
@@ -38,23 +38,21 @@ func MainLoop() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-	log.Println("Listen " + CONFIG.Address + ":" + CONFIG.Listen)
+	log.Println("Listen " + bindAddr + ":" + port)
 }
 
-func generateTLSConfig() *tls.Config {
+func generateTLSConfig(enableClientCertAuth bool, caCertPath string, enableClientCNAuth bool, authCN string) *tls.Config {
 	config := &tls.Config{}
-	if CONFIG.EnableHttps {
-		config.InsecureSkipVerify = true
-	}
-	if CONFIG.EnableClientCertAuth {
+	config.InsecureSkipVerify = true
+	if enableClientCertAuth {
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 
-		rawCA, _ := ioutil.ReadFile(CONFIG.ClientAuthCAPath)
+		rawCA, _ := ioutil.ReadFile(caCertPath)
 		crtPool := x509.NewCertPool()
 		crtPool.AppendCertsFromPEM(rawCA)
 		config.ClientCAs = crtPool
 	}
-	if CONFIG.EnableClientCertCNAuth {
+	if enableClientCNAuth {
 		config.VerifyPeerCertificate = func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 			hasAccess := false
 			for _, rawCert := range rawCerts {
@@ -63,7 +61,7 @@ func generateTLSConfig() *tls.Config {
 					log.Fatal(err)
 				}
 				for _, cert := range certs {
-					if cert.Subject.CommonName == CONFIG.AuthCN {
+					if cert.Subject.CommonName == authCN {
 						hasAccess = true
 					}
 				}

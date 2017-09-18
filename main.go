@@ -5,26 +5,17 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"signCert/config"
+	"signCert/utils"
+	"signCert/web"
 )
 
-type ConfigStruct struct {
-	Address string
-	Listen string
-	DevCAPath string `yaml:"dev_ca_path"`
-	ProdCAPath string `yaml:"prod_ca_path"`
-	TeamMail string `yaml:"team_mail_list"`
-	EnableHttps bool `yaml:"enable_https"`
-	ServerCertPath string `yaml:"server_cert_path"`
-	ServerKeyPath string `yaml:"server_key_path"`
-	EnableClientCertAuth bool `yaml:"enable_client_cert_auth"`
-	ClientAuthCAPath string `yaml:"client_auth_ca_file_path"`
-	EnableClientCertCNAuth bool `yaml:"enable_client_cert_CN_auth"`
-	AuthCN string `yaml:"auth_cn"`
-}
-var CONFIG = ConfigStruct{}
+
+var CONFIG = config.ConfigStruct{}
 
 func main() {
 	err := LoadConfig(&CONFIG)
+	utils.CONFIG = CONFIG
 	if err != nil {
 		log.Panic(err)
 		os.Exit(1)
@@ -36,11 +27,11 @@ func main() {
 	//c.AddFunc("24 5 14 * * *", validateCertTask)
 	//c.Start()
 
-	MainLoop()
+	web.MainLoop(CONFIG.Address, CONFIG.Listen, CONFIG.EnableHttps, CONFIG.ServerCertPath, CONFIG.ServerKeyPath, CONFIG.ProdCAPath+"/private/ca.crt", CONFIG.EnableClientCertAuth, CONFIG.EnableClientCertCNAuth, CONFIG.AuthCN)
 	os.Exit(0)
 }
 
-func LoadConfig(config *ConfigStruct) error {
+func LoadConfig(config *config.ConfigStruct) error {
 	configString, err := ioutil.ReadFile("config.yml")
 	if err != nil {
 		return err

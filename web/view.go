@@ -1,12 +1,13 @@
-package main
+package web
 
 import (
 	"html/template"
 	"net/http"
+	"signCert/utils"
 )
 
 
-func indexView(w http.ResponseWriter, cs Certs) {
+func indexView(w http.ResponseWriter, cs utils.Certs) {
 	t := template.Must(template.ParseFiles("template/index.html"))
 	t.Execute(w, cs)
 }

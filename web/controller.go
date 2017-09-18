@@ -1,11 +1,12 @@
-package main
+package web
 
 import (
 	"fmt"
 	"strings"
 	"net/http"
 	"log"
-	"signCert/session"
+	"signCert/web/session"
+	"signCert/utils"
 )
 
 const (
@@ -17,7 +18,7 @@ func indexController(w http.ResponseWriter, r *http.Request){
 	handleRequest(r)
 
 	env := session.Get(sessionKeyENV).(string)
-	cs := GetCertsList(env)
+	cs := utils.GetCertsList(env)
 
 	indexView(w, cs)
 }
@@ -31,7 +32,7 @@ func certController(w http.ResponseWriter, r *http.Request){
 	}
 	certFile := r.Form.Get("cert")
 	env := session.Get(sessionKeyENV).(string)
-	cert := GetCertDetail(certFile, env)
+	cert := utils.GetCertDetail(certFile, env)
 	certDetailView(w, cert)
 }
 
@@ -56,7 +57,7 @@ func signCertController(w http.ResponseWriter, r *http.Request)  {
 		fmt.Fprintf(w, "please use corperation email address!")
 		return
 	}
-	ret := SignCert(cn, email, days, env)
+	ret := utils.SignCert(cn, email, days, env)
 	if ret {
 		fmt.Fprintf(w, "Cert signed!")
 	} else {

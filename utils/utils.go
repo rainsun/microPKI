@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"crypto/x509"
@@ -12,6 +12,7 @@ import (
 	"signCert/mail"
 	"signCert/microPKI"
 	"strconv"
+	"signCert/config"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 	prodOU = "Infrastructure Team"
 )
 
+var CONFIG config.ConfigStruct
 var successNotifyMailTile string = "[INFR PKI] [%s] Cert signed for %s"
 var successNotifyMailBody string = "%s's cert has been signed!\n Please download attachment as archive of the cert!"
 
