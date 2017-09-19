@@ -56,7 +56,7 @@ func NewMircoPKI(caCert string, caKey string) *MicroPkI {
 }
 
 func (caSvc *MicroPkI) buildCAService(caCert string, caKey string) error {
-	cert, err := caSvc.LoadCertificatefromPEMFile(caCert)
+	cert, err := LoadCertificatefromPEMFile(caCert)
 	if err != nil {
 		log.Fatal("Load CA Cert failed: ", err)
 		return err

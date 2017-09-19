@@ -14,7 +14,7 @@ const (
 	certificateFilePerm = 0600
 )
 
-func (pki *MicroPkI) LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certificate, error) {
+func LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certificate, error) {
 	crts, err := x509.ParseCertificates(derBytes)
 	if err != nil {
 		return nil, err
@@ -26,15 +26,15 @@ func (pki *MicroPkI) LoadCertificatefromDerBytes(derBytes []byte) (*x509.Certifi
 	return crts[0], nil
 }
 
-func (pki *MicroPkI) LoadCertificatefromDerFile(certificateFile string) (*x509.Certificate, error) {
+func LoadCertificatefromDerFile(certificateFile string) (*x509.Certificate, error) {
 	certificateBits, err := ioutil.ReadFile(certificateFile)
 	if err != nil {
 		return nil, err
 	}
-	return pki.LoadCertificatefromDerBytes(certificateBits)
+	return LoadCertificatefromDerBytes(certificateBits)
 }
 
-func (pki *MicroPkI) LoadCertificatefromPEMFile(certificateFile string) (*x509.Certificate, error) {
+func LoadCertificatefromPEMFile(certificateFile string) (*x509.Certificate, error) {
 	certificateBits, err := ioutil.ReadFile(certificateFile)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (pki *MicroPkI) LoadCertificatefromPEMFile(certificateFile string) (*x509.C
 		err = errors.New("Unmatched type or headers")
 		return nil, err
 	}
-	return pki.LoadCertificatefromDerBytes(pemBlock.Bytes)
+	return LoadCertificatefromDerBytes(pemBlock.Bytes)
 }
 
 func (pki *MicroPkI) DumpCertificatetoPEMFile(certificate *x509.Certificate, outputFilePath string) error {

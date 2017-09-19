@@ -8,6 +8,7 @@ import (
 	"signCert/config"
 	"signCert/utils"
 	"signCert/web"
+	"github.com/robfig/cron"
 )
 
 var CONFIG = config.ConfigStruct{}
@@ -21,11 +22,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	//c := cron.New()
+	c := cron.New()
 	//			秒 分 时 日 月 星期
-	//c.AddFunc("24 5 14 * * *", validateCertTask)
-	//c.Start()
-
+	c.AddFunc("@daily", utils.DEVNotAfterValidationTask)
+	c.AddFunc("@daily", utils.PRODNotAfterValidationTask)
+	c.Start()
 	web.MainLoop()
 	os.Exit(0)
 }

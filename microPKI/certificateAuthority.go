@@ -87,7 +87,7 @@ func (pki *MicroPkI) CreateCertificateAuthority(key *rsa.PrivateKey, organizatio
 		return nil, err
 	}
 
-	ca, err := pki.LoadCertificatefromDerBytes(crtBytes)
+	ca, err := LoadCertificatefromDerBytes(crtBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.Certificat
 		return nil, err
 	}
 
-	cert, err :=  pki.LoadCertificatefromDerBytes(crtOutBytes)
+	cert, err :=  LoadCertificatefromDerBytes(crtOutBytes)
 	if err != nil {
 		return nil, err
 	}

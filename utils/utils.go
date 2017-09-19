@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/pem"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -53,20 +51,10 @@ func GetCertsList(env string) Certs {
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), "crt") || strings.HasSuffix(f.Name(), "pem") {
 			filePathName := path + userCertFilePath + f.Name()
-			certFile, _ := ioutil.ReadFile(filePathName)
-			pemBlock, _ := pem.Decode(certFile)
-			if pemBlock == nil {
-				log.Println("Parse cert fail: ", filePathName)
-				continue
-			}
-			if pemBlock.Type != microPKI.CertificatePEMType || len(pemBlock.Headers) != 0 {
-				log.Println("Parse cert fail: ", filePathName)
-				continue
-			}
 
-			cert, err := x509.ParseCertificate(pemBlock.Bytes)
+			cert, err := microPKI.LoadCertificatefromPEMFile(filePathName)
 			if err != nil {
-				log.Fatal(filePathName, err)
+				log.Println("Parse cert fail: ", filePathName)
 				continue
 			}
 

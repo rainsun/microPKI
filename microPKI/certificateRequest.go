@@ -27,7 +27,7 @@ var (
 		SerialNumber:       "",
 		CommonName:         "",
 	}
-	oidEmailAddress = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 1}
+	OidEmailAddress = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 1}
 )
 
 
@@ -50,7 +50,7 @@ func (pki *MicroPkI) GenerateCertificateSigningRequest(key *rsa.PrivateKey, orga
 		csrPkixName.Locality = []string{locality}
 	}
 	if email != ""{
-		csrPkixName.ExtraNames = []pkix.AttributeTypeAndValue{pkix.AttributeTypeAndValue{Type: oidEmailAddress, Value: email}}
+		csrPkixName.Names = []pkix.AttributeTypeAndValue{pkix.AttributeTypeAndValue{Type: OidEmailAddress, Value: email}}
 	}
 	csrTemplate := &x509.CertificateRequest{
 		Subject:     csrPkixName,
