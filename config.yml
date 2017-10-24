@@ -4,7 +4,7 @@ team_mail_list: zhouhuan@we.com;zhongzhuhua@we.com;chengliwei@we.com;lvconggang@
 web:
   address: 0.0.0.0
   listen: 9090
-  enable_https: true
+  enable_https: false
   server_cert_path: dev_ca/server/server.crt
   server_key_path: dev_ca/server/server.key
   enable_client_cert_auth: true

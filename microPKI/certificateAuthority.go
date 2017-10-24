@@ -112,31 +112,31 @@ func (pki *MicroPkI) createIntermediateCertificateAuthority(csr *x509.Certificat
 	}
 	serialNumber := big.NewInt(0).SetBytes(raw)
 	serialNumber = serialNumber.Add(serialNumber, big.NewInt(1)) // SerialNumber increase once
-	authTemplate.SerialNumber.Set(serialNumber)
-	authTemplate.MaxPathLenZero = false
-
-
-	authTemplate.RawSubject = csr.RawSubject
+	newCert := x509.Certificate{
+		SerialNumber: serialNumber,
+		MaxPathLenZero: false,
+		RawSubject: csr.RawSubject,
+	}
 
 	caExpiry := pki.caCert.NotAfter
 	proposedExpiry := time.Now().AddDate(expYear, expMonths, expDays).UTC()
 	// ensure cert doesn't expire after issuer
 	if caExpiry.Before(proposedExpiry) {
-		authTemplate.NotAfter = caExpiry
+		newCert.NotAfter = caExpiry
 	} else {
-		authTemplate.NotAfter = proposedExpiry
+		newCert.NotAfter = proposedExpiry
 	}
 
-	authTemplate.SubjectKeyId, err = pki.GenerateSubjectKeyID(csr.PublicKey)
+	newCert.SubjectKeyId, err = pki.GenerateSubjectKeyID(csr.PublicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	authTemplate.IPAddresses = csr.IPAddresses
-	authTemplate.DNSNames = csr.DNSNames
+	//newCert.IPAddresses = csr.IPAddresses
+	//newCert.DNSNames = csr.DNSNames
+	newCert.SignatureAlgorithm = x509.SHA1WithRSA;
 
-
-	crtOutBytes, err := x509.CreateCertificate(rand.Reader, &authTemplate, pki.caCert, csr.PublicKey, pki.caKey)
+	crtOutBytes, err := x509.CreateCertificate(rand.Reader, &newCert, pki.caCert, csr.PublicKey, pki.caKey)
 	if err != nil {
 		return nil, err
 	}

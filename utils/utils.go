@@ -108,15 +108,17 @@ func getDNfromPkiName(name pkix.Name) string {
 func SignCert(cn string, email string, days string, env string) bool {
 	var path string = ""
 	ou := ""
+	var pki microPKI.MicroPkI
 	if env == ProdENV {
 		path = CONFIG.ProdCAPath
 		ou = prodOU
+		pki = microPKI.PROD_PKI
 	} else {
 		path = CONFIG.DevCAPath
 		ou = devOU
+		pki = microPKI.DEV_PKI
 	}
 
-	pki := microPKI.NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(path+caCertFilePath, path+caKeyFilePath, path)
 	privateKey, err := pki.GenerateRSAKey()
 	if err != nil {
 		log.Fatal("Generate private key failed: ", err)

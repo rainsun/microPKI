@@ -8,6 +8,7 @@ import (
 	"signCert/config"
 	"signCert/utils"
 	"signCert/web"
+	"signCert/microPKI"
 	"github.com/robfig/cron"
 )
 
@@ -21,6 +22,9 @@ func main() {
 		log.Panic(err)
 		os.Exit(1)
 	}
+
+	microPKI.DEV_PKI = *microPKI.NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(CONFIG.DevCAPath + "/private/ca.cert", CONFIG.DevCAPath+"/private/ca.key", CONFIG.DevCAPath)
+	microPKI.PROD_PKI = *microPKI.NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(CONFIG.ProdCAPath + "/private/ca.cert", CONFIG.ProdCAPath+"/private/ca.key", CONFIG.ProdCAPath)
 
 	c := cron.New()
 	//			秒 分 时 日 月 星期

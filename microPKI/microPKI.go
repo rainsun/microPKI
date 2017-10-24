@@ -7,6 +7,7 @@ import (
 	"log"
 	"errors"
 	"math/big"
+	"strconv"
 )
 
 type MicroPkI struct {
@@ -23,6 +24,11 @@ const (
 	keyCertPrefix = "CERT-"
 	pkiDateBaseName = "PKI_DATABASE"
 	initSerialNumber = 1000
+)
+
+var (
+	PROD_PKI MicroPkI
+	DEV_PKI MicroPkI
 )
 
 func NewMicroPKI_INTERNAL_PRIVATE_FUNCTION(caCert string, caKey string, dbPath string) *MicroPkI {
@@ -126,4 +132,41 @@ func (caSvc *MicroPkI) SignCert(csr *x509.CertificateRequest, expYears int, expM
 		return nil, err
 	}
 	return cert, nil
+}
+
+
+func (caSvc *MicroPkI) GetCertAlertAble(cn string, level int) bool {
+	hasAlertFlag, err := caSvc.db.Has([]byte(cn+strconv.Itoa(level)), nil)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	if hasAlertFlag {
+		alertAble, err := caSvc.db.Get([]byte(cn+strconv.Itoa(level)), nil)
+		if err != nil {
+			log.Fatal(err)
+			return false
+		}
+		if string(alertAble) == "T" {
+			return true
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
+func (caSvc *MicroPkI) SetCertAlertAble(cn string, level int, flag bool) bool {
+	var f string
+	if flag {
+		f = "T"
+	}else {
+		f = "F"
+	}
+	err := caSvc.db.Put([]byte(cn+strconv.Itoa(level)), []byte(f), nil)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return true
 }

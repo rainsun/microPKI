@@ -28,15 +28,20 @@ var (
 
 	ALERT_DURATION     = []int64{0, 7 * SECONDS_PER_DAY, 15 * SECONDS_PER_DAY, 30 * SECONDS_PER_DAY, 60 * SECONDS_PER_DAY}
 	ALERT_LEVEL_STRING = []string{"忽略", "提醒", "重要", "警告", "紧急"}
+
+	DEV_PKI microPKI.MicroPkI
+	PROD_PKI microPKI.MicroPkI
 )
 
 func notAfterValidation(env string) {
 	var path string = ""
-
+	var pki microPKI.MicroPkI
 	if env == ProdENV {
 		path = CONFIG.ProdCAPath
+		pki = PROD_PKI
 	} else {
 		path = CONFIG.DevCAPath
+		pki = DEV_PKI
 	}
 
 	files, _ := ioutil.ReadDir(path + userCertFilePath)
@@ -73,11 +78,17 @@ func notAfterValidation(env string) {
 				}
 			}
 
-			if alertLevel > 0 {
+			sendAble := pki.GetCertAlertAble(cert.Subject.CommonName, alertLevel)
+
+			if alertLevel > 0 && sendAble {
 				mail.SendMail(emailAddr, emailTitle, emailBody, "")
 				for _, m := range strings.Split(CONFIG.TeamMail, ";") {
 					log.Println(m)
 					mail.SendMail(m, emailTitle, emailBody, "")
+				}
+				pki.SetCertAlertAble(cert.Subject.CommonName, alertLevel, false)
+				if alertLevel-1 >= 0 {
+					pki.SetCertAlertAble(cert.Subject.CommonName, alertLevel-1, true)
 				}
 			}
 		}

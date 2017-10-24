@@ -30,6 +30,7 @@ func MainLoop() {
 	go globalSessions.GC()
 
 	server := &http.Server{Addr: CONFIG.Address + ":" + CONFIG.Listen}
+	log.Println("Listen " + CONFIG.Address + ":" + CONFIG.Listen)
 	var err error
 	if CONFIG.EnableHttps {
 		server.TLSConfig = generateTLSConfig()
@@ -41,7 +42,6 @@ func MainLoop() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-	log.Println("Listen " + CONFIG.Address + ":" + CONFIG.Listen)
 }
 
 func generateTLSConfig() *tls.Config {
