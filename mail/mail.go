@@ -13,7 +13,7 @@ func SendMail(to string, subj string, msg string, attachment string) error {
 
 
 	m := email.NewMessage(subj, msg)
-	m.From = mail.Address{Name: "Infrastructure Team", Address: "no-reply@infteam.we.com"}
+	m.From = mail.Address{Name: "Infrastructure Team", Address: "no-reply@domain.com"}
 	m.To = []string{to}
 
 	var err error
